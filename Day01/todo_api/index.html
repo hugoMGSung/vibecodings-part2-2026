@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FastAPI TODO</title>
+  <style>
+    :root {
+      --bg: #f7f7fb;
+      --panel: rgba(255, 255, 255, 0.9);
+      --panel-strong: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #d7dde8;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --danger: #dc2626;
+      --danger-bg: #fee2e2;
+      --success-bg: #dcfce7;
+      --shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.16), transparent 34%),
+        radial-gradient(circle at bottom right, rgba(99, 102, 241, 0.16), transparent 30%),
+        var(--bg);
+      padding: 24px;
+    }
+
+    .shell {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      gap: 20px;
+    }
+
+    .hero,
+    .card {
+      background: var(--panel);
+      border: 1px solid rgba(215, 221, 232, 0.9);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .hero {
+      padding: 28px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -70px -90px auto;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.18), rgba(99, 102, 241, 0.18));
+      filter: blur(2px);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(37, 99, 235, 0.1);
+      color: var(--primary-dark);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 14px 0 10px;
+      font-size: clamp(32px, 5vw, 48px);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 640px;
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 16px;
+    }
+
+    .card {
+      padding: 24px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    #todoInput {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px 16px;
+      font-size: 16px;
+      outline: none;
+      background: var(--panel-strong);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    #todoInput:focus {
+      border-color: rgba(37, 99, 235, 0.8);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    }
+
+    .button {
+      border: 0;
+      border-radius: 16px;
+      padding: 14px 18px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s ease, background 0.2s ease, opacity 0.2s ease;
+    }
+
+    .button:active {
+      transform: translateY(1px);
+    }
+
+    .button.primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .button.primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 14px 0 18px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .status {
+      min-height: 20px;
+      font-size: 14px;
+      color: var(--primary-dark);
+    }
+
+    .list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 12px;
+    }
+
+    .item {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 14px;
+      align-items: center;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.92);
+      animation: fadeIn 0.25s ease both;
+    }
+
+    .item.done {
+      background: linear-gradient(180deg, rgba(220, 252, 231, 0.8), rgba(255, 255, 255, 0.96));
+    }
+
+    .check {
+      width: 20px;
+      height: 20px;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    .title {
+      font-size: 16px;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .item.done .title {
+      text-decoration: line-through;
+      color: #6b7280;
+    }
+
+    .remove {
+      border: 0;
+      border-radius: 999px;
+      background: var(--danger-bg);
+      color: var(--danger);
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .remove:hover {
+      filter: brightness(0.98);
+    }
+
+    .empty {
+      padding: 28px 16px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed var(--border);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 14px;
+      }
+
+      .hero,
+      .card {
+        border-radius: 20px;
+      }
+
+      .controls {
+        grid-template-columns: 1fr;
+      }
+
+      .item {
+        grid-template-columns: auto 1fr;
+      }
+
+      .remove {
+        grid-column: 1 / -1;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <span class="eyebrow">FastAPI + HTML + JavaScript</span>
+      <h1>브라우저에서 바로 쓰는 TODO 앱</h1>
+      <p>
+        할 일을 추가하고, 완료 상태를 바꾸고, 필요 없는 항목은 삭제해보세요.
+        데이터는 메모리에만 저장되기 때문에 새로고침 후에는 초기화됩니다.
+      </p>
+    </section>
+
+    <section class="card">
+      <div class="controls">
+        <input id="todoInput" type="text" placeholder="예: FastAPI 복습하기" />
+        <button class="button primary" id="addButton">추가</button>
+      </div>
+
+      <div class="meta">
+        <span id="countText">0개</span>
+        <span id="hintText">Enter로도 추가할 수 있어요.</span>
+      </div>
+
+      <div class="status" id="statusText"></div>
+      <ul class="list" id="todoList"></ul>
+    </section>
+  </main>
+
+  <script>
+    const todoInput = document.getElementById("todoInput");
+    const addButton = document.getElementById("addButton");
+    const todoList = document.getElementById("todoList");
+    const countText = document.getElementById("countText");
+    const statusText = document.getElementById("statusText");
+
+    function setStatus(message, isError = false) {
+      statusText.textContent = message;
+      statusText.style.color = isError ? "#dc2626" : "#1d4ed8";
+    }
+
+    async function api(path, options = {}) {
+      const response = await fetch(path, {
+        headers: {
+          "Content-Type": "application/json",
+          ...(options.headers || {})
+        },
+        ...options
+      });
+
+      if (!response.ok) {
+        let message = "요청에 실패했습니다.";
+        try {
+          const error = await response.json();
+          message = error.detail || message;
+        } catch (e) {
+          // 응답 본문이 없을 수 있습니다.
+        }
+        throw new Error(message);
+      }
+
+      if (response.status === 204) {
+        return null;
+      }
+
+      return response.json();
+    }
+
+    function emptyState() {
+      return `
+        <li class="empty">
+          아직 할 일이 없어요. 위 입력창에 하나 추가해보세요.
+        </li>
+      `;
+    }
+
+    function renderTodos(todos) {
+      countText.textContent = `${todos.length}개`;
+      todoList.innerHTML = "";
+
+      if (todos.length === 0) {
+        todoList.innerHTML = emptyState();
+        return;
+      }
+
+      todos.forEach((todo) => {
+        const li = document.createElement("li");
+        li.className = `item ${todo.completed ? "done" : ""}`;
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.className = "check";
+        checkbox.checked = todo.completed;
+        checkbox.setAttribute("aria-label", `${todo.title} 완료 상태 변경`);
+        checkbox.addEventListener("change", () => toggleTodo(todo.id, checkbox.checked));
+
+        const title = document.createElement("div");
+        title.className = "title";
+        title.textContent = todo.title;
+
+        const removeButton = document.createElement("button");
+        removeButton.className = "remove";
+        removeButton.textContent = "삭제";
+        removeButton.addEventListener("click", () => deleteTodo(todo.id));
+
+        li.appendChild(checkbox);
+        li.appendChild(title);
+        li.appendChild(removeButton);
+        todoList.appendChild(li);
+      });
+    }
+
+    async function loadTodos() {
+      try {
+        const todos = await api("/todos");
+        renderTodos(todos);
+      } catch (error) {
+        setStatus(error.message, true);
+      }
+    }
+
+    async function addTodo() {
+      const title = todoInput.value.trim();
+      if (!title) {
+        setStatus("할 일을 입력해 주세요.", true);
+        todoInput.focus();
+        return;
+      }
+
+      try {
+        await api("/todos", {
+          method: "POST",
+          body: JSON.stringify({ title })
+        });
+        todoInput.value = "";
+        setStatus("할 일이 추가되었습니다.");
+        await loadTodos();
+        todoInput.focus();
+      } catch (error) {
+        setStatus(error.message, true);
+      }
+    }
+
+    async function toggleTodo(todoId, completed) {
+      try {
+        await api(`/todos/${todoId}`, {
+          method: "PATCH",
+          body: JSON.stringify({ completed })
+        });
+        setStatus("완료 상태를 변경했습니다.");
+        await loadTodos();
+      } catch (error) {
+        setStatus(error.message, true);
+      }
+    }
+
+    async function deleteTodo(todoId) {
+      try {
+        await api(`/todos/${todoId}`, { method: "DELETE" });
+        setStatus("할 일을 삭제했습니다.");
+        await loadTodos();
+      } catch (error) {
+        setStatus(error.message, true);
+      }
+    }
+
+    addButton.addEventListener("click", addTodo);
+    todoInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        addTodo();
+      }
+    });
+
+    loadTodos();
+  </script>
+</body>
+</html>

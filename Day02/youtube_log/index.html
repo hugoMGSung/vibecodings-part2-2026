@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>유튜브 학습 기록 앱</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <script src="./script.js" defer></script>
+</head>
+<body>
+  <main class="app">
+    <section class="hero">
+      <p class="eyebrow">YouTube Study Log</p>
+      <h1 class="title">유튜브 학습 기록 앱</h1>
+      <p class="subtitle">학습한 유튜브 영상 URL을 저장하고, 다시 열어보고, 완료 표시까지 관리하세요.</p>
+    </section>
+
+    <section class="composer" aria-label="URL 입력">
+      <label class="label" for="urlInput">유튜브 URL</label>
+      <div class="composer-row">
+        <div class="input-wrap">
+          <input id="urlInput" class="input" type="url" placeholder="https://www.youtube.com/watch?v=..." autocomplete="off" />
+          <button id="clearInputButton" class="input-clear" type="button" aria-label="입력 내용 지우기">×</button>
+        </div>
+        <button id="addButton" class="button button-primary" type="button">추가</button>
+      </div>
+      <p class="helper">유튜브 영상 주소를 붙여넣고 목록에 저장하세요.</p>
+    </section>
+
+    <section class="toolbar" aria-label="기록 정보">
+      <div class="count">
+        <span class="count-label">전체</span>
+        <strong id="totalCount">0</strong>
+      </div>
+      <div class="count">
+        <span class="count-label">완료</span>
+        <strong id="doneCount">0</strong>
+      </div>
+      <button id="clearButton" class="button button-ghost" type="button">전체 삭제</button>
+    </section>
+
+    <section class="list-section" aria-label="저장된 URL 목록">
+      <div id="emptyState" class="empty-state">
+        <p>아직 저장된 URL이 없습니다.</p>
+        <span>첫 번째 유튜브 학습 영상을 추가해보세요.</span>
+      </div>
+      <ul id="logList" class="log-list"></ul>
+    </section>
+  </main>
+</body>
+</html>

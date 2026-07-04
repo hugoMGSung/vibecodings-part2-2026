@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>단계형 퍼즐 게임</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <script src="./script.js" defer></script>
+</head>
+<body>
+  <main class="app">
+    <header class="hero">
+      <h1 class="title">단계형 퍼즐 게임</h1>
+      <p class="subtitle">시작 화면에서 출발해서, 시간 안에 모든 단계를 클리어해보세요.</p>
+    </header>
+
+    <section class="toolbar" aria-label="게임 정보">
+      <div class="stats">
+        <div class="stat">단계: <span id="stageName">쉬움</span></div>
+        <div class="stat">시도 횟수: <span id="attemptCount">0</span></div>
+        <div class="stat">점수: <span id="scoreCount">0</span></div>
+        <div class="stat timer">남은 시간: <span id="timerCount">0</span>초</div>
+      </div>
+      <button class="restart" id="restartButton" type="button">다시 시작</button>
+    </section>
+
+    <section class="board" id="board" aria-label="퍼즐 보드"></section>
+
+    <div class="message" id="message">시작하기 버튼을 눌러 게임을 시작하세요.</div>
+
+    <section class="screen screen-start" id="startScreen" aria-label="게임 시작 화면">
+      <div class="screen-panel">
+        <p class="screen-kicker">Puzzle Start</p>
+        <h2 class="screen-title">퍼즐 여행을 시작할까요?</h2>
+        <p class="screen-text">
+          쉬움부터 어려움까지 순서대로 도전하는 단계형 게임입니다.
+          시간 안에 퍼즐을 맞추고 다음 단계로 넘어가 보세요.
+        </p>
+        <button class="screen-button" id="startButton" type="button">시작하기</button>
+      </div>
+    </section>
+
+    <section class="screen screen-result" id="resultScreen" aria-label="게임 종료 화면" hidden>
+      <div class="screen-panel">
+        <p class="screen-kicker" id="resultKicker">Puzzle Clear</p>
+        <h2 class="screen-title" id="resultTitle">모든 단계를 완료했습니다!</h2>
+        <p class="screen-text" id="resultText">축하합니다. 멋지게 모든 단계를 끝냈습니다.</p>
+        <button class="screen-button" id="resultButton" type="button">처음부터 다시하기</button>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

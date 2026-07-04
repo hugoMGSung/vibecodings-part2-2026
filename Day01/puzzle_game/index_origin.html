@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>간단한 퍼즐 게임</title>
+  <style>
+    :root {
+      --bg: #f4f6fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --board: #b9f2c6;
+      --board-border: #9be7af;
+      --accent: #2f6fed;
+      --accent-hover: #2459c9;
+      --shadow: 0 14px 40px rgba(15, 23, 42, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(255, 255, 255, 0.95), transparent 36%),
+        linear-gradient(180deg, #eff3fb 0%, #f6f8fc 100%);
+    }
+
+    .app {
+      width: min(100%, 430px);
+      background: var(--card);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      padding: 28px 22px 20px;
+    }
+
+    .title {
+      margin: 0;
+      text-align: center;
+      font-size: 30px;
+      line-height: 1.2;
+      letter-spacing: -0.03em;
+      font-weight: 800;
+    }
+
+    .subtitle {
+      margin: 10px 0 22px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .attempts {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .restart {
+      border: 0;
+      background: var(--accent);
+      color: white;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 12px 18px;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.15s ease;
+      box-shadow: 0 8px 18px rgba(47, 111, 237, 0.18);
+    }
+
+    .restart:hover {
+      background: var(--accent-hover);
+    }
+
+    .restart:active {
+      transform: translateY(1px);
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin: 8px 0 18px;
+    }
+
+    .card {
+      aspect-ratio: 1 / 1;
+      border: 1px solid var(--board-border);
+      border-radius: 16px;
+      background: linear-gradient(180deg, #bdf5cc 0%, #abefbf 100%);
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+      transition: transform 0.15s ease, filter 0.2s ease, background 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.01);
+    }
+
+    .card:disabled {
+      cursor: default;
+    }
+
+    .card .emoji {
+      opacity: 0;
+      transform: scale(0.85);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .card.flipped,
+    .card.matched {
+      background: linear-gradient(180deg, #d4f8dd 0%, #bdf5cc 100%);
+    }
+
+    .card.flipped .emoji,
+    .card.matched .emoji {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .card.matched {
+      box-shadow: inset 0 0 0 1px rgba(47, 111, 237, 0.08);
+    }
+
+    .message {
+      min-height: 28px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 16px;
+      line-height: 1.4;
+      color: #1f2937;
+    }
+
+    .message.done {
+      color: #1f6b34;
+    }
+
+    @media (max-width: 420px) {
+      .app {
+        padding: 22px 16px 18px;
+        border-radius: 18px;
+      }
+
+      .title {
+        font-size: 26px;
+      }
+
+      .subtitle {
+        font-size: 14px;
+      }
+
+      .attempts {
+        font-size: 16px;
+      }
+
+      .restart {
+        padding: 10px 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <h1 class="title">간단한 퍼즐 게임</h1>
+    <p class="subtitle">같은 그림 2개를 찾아 모두 맞추면 클리어입니다.</p>
+
+    <section class="toolbar" aria-label="게임 정보">
+      <div class="attempts">시도 횟수: <span id="attemptCount">0</span></div>
+      <button class="restart" id="restartButton" type="button">다시 시작</button>
+    </section>
+
+    <section class="board" id="board" aria-label="퍼즐 보드"></section>
+
+    <div class="message" id="message">같은 그림을 찾아서 짝을 맞춰보세요.</div>
+  </main>
+
+  <script>
+    const emojis = ["🍇", "🍓", "🥝", "🍑", "🍎", "🍉", "🍒", "🍊"];
+
+    const board = document.getElementById("board");
+    const attemptCount = document.getElementById("attemptCount");
+    const restartButton = document.getElementById("restartButton");
+    const message = document.getElementById("message");
+
+    let cards = [];
+    let firstCard = null;
+    let secondCard = null;
+    let lockBoard = false;
+    let attempts = 0;
+    let matchedPairs = 0;
+
+    function shuffle(array) {
+      // 원본 배열은 그대로 두고 복사본을 만듭니다.
+      // Math.random()을 이용해 카드 순서를 무작위로 섞습니다.
+      return [...array].sort(() => Math.random() - 0.5);
+    }
+
+    function updateMessage(text, done = false) {
+      message.textContent = text;
+      message.classList.toggle("done", done);
+    }
+
+    function resetTurn() {
+      firstCard = null;
+      secondCard = null;
+      lockBoard = false;
+    }
+
+    function markMatched(cardA, cardB) {
+      cardA.classList.add("matched");
+      cardB.classList.add("matched");
+      cardA.disabled = true;
+      cardB.disabled = true;
+      matchedPairs += 1;
+    }
+
+    function checkWin() {
+      if (matchedPairs === emojis.length) {
+        updateMessage(`축하합니다! ${attempts}번 만에 모두 맞췄습니다.`, true);
+      }
+    }
+
+    function handleCardClick(card) {
+      if (lockBoard || card === firstCard || card.classList.contains("matched")) {
+        return;
+      }
+
+      card.classList.add("flipped");
+
+      if (!firstCard) {
+        firstCard = card;
+        return;
+      }
+
+      secondCard = card;
+      attempts += 1;
+      attemptCount.textContent = attempts;
+      lockBoard = true;
+
+      const isMatch = firstCard.dataset.value === secondCard.dataset.value;
+
+      if (isMatch) {
+        markMatched(firstCard, secondCard);
+        updateMessage("잘 찾았어요! 같은 그림입니다.");
+        resetTurn();
+        checkWin();
+        return;
+      }
+
+      updateMessage("다른 그림입니다. 잠깐 뒤에 다시 뒤집어요.");
+
+      setTimeout(() => {
+        firstCard.classList.remove("flipped");
+        secondCard.classList.remove("flipped");
+        updateMessage("다시 같은 그림을 찾아보세요.");
+        resetTurn();
+      }, 700);
+    }
+
+    function createCard(value) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "card";
+      button.dataset.value = value;
+      button.setAttribute("aria-label", "카드");
+
+      const emoji = document.createElement("span");
+      emoji.className = "emoji";
+      emoji.textContent = value;
+
+      button.appendChild(emoji);
+      button.addEventListener("click", () => handleCardClick(button));
+
+      return button;
+    }
+
+    function renderBoard() {
+      const shuffled = shuffle([...emojis, ...emojis]);
+      board.innerHTML = "";
+      cards = [];
+
+      shuffled.forEach((value) => {
+        const card = createCard(value);
+        cards.push(card);
+        board.appendChild(card);
+      });
+    }
+
+    function startGame() {
+      attempts = 0;
+      matchedPairs = 0;
+      attemptCount.textContent = attempts;
+      resetTurn();
+      updateMessage("같은 그림을 찾아서 짝을 맞춰보세요.");
+      renderBoard();
+    }
+
+    restartButton.addEventListener("click", startGame);
+
+    startGame();
+  </script>
+</body>
+</html>

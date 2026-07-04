@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>간단한 TODO 리스트</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --subtext: #6b7280;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --danger: #ef4444;
+      --danger-hover: #dc2626;
+      --done: #9ca3af;
+      --border: #dbe3ee;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(135deg, #eaf2ff 0%, #f8fafc 55%, #eef2ff 100%);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 560px;
+      background: var(--card);
+      border: 1px solid rgba(219, 227, 238, 0.8);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .header {
+      padding: 28px 28px 20px;
+      background: linear-gradient(135deg, #2563eb, #4f46e5);
+      color: white;
+    }
+
+    .header h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+
+    .header p {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.9);
+      line-height: 1.5;
+    }
+
+    .content {
+      padding: 24px 28px 28px;
+    }
+
+    .input-area {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    #todoInput {
+      flex: 1;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 16px;
+      outline: none;
+    }
+
+    #todoInput:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    }
+
+    #addButton {
+      border: none;
+      border-radius: 12px;
+      padding: 14px 18px;
+      background: var(--primary);
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      white-space: nowrap;
+    }
+
+    #addButton:hover {
+      background: var(--primary-hover);
+    }
+
+    .hint {
+      margin: 0 0 16px;
+      color: var(--subtext);
+      font-size: 14px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 12px;
+    }
+
+    li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #f9fbff;
+    }
+
+    .todo-text {
+      flex: 1;
+      word-break: break-word;
+      line-height: 1.5;
+    }
+
+    .todo-text.done {
+      text-decoration: line-through;
+      color: var(--done);
+    }
+
+    .buttons {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .check-button,
+    .delete-button {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: transform 0.15s ease, background 0.2s ease;
+    }
+
+    .check-button {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .check-button:hover {
+      background: #bbf7d0;
+    }
+
+    .delete-button {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .delete-button:hover {
+      background: #fecaca;
+    }
+
+    .check-button:active,
+    .delete-button:active,
+    #addButton:active {
+      transform: scale(0.98);
+    }
+
+    .empty {
+      padding: 22px 16px;
+      text-align: center;
+      color: var(--subtext);
+      border: 1px dashed var(--border);
+      border-radius: 14px;
+      background: #fcfdff;
+    }
+
+    @media (max-width: 480px) {
+      .header,
+      .content {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+
+      .input-area {
+        flex-direction: column;
+      }
+
+      #addButton {
+        width: 100%;
+      }
+
+      li {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .buttons {
+        width: 100%;
+      }
+
+      .check-button,
+      .delete-button {
+        flex: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="header">
+      <h1>TODO 리스트</h1>
+      <p>할 일을 추가하고, 완료 체크하고, 필요 없는 항목은 삭제해보세요.</p>
+    </section>
+
+    <section class="content">
+      <div class="input-area">
+        <input id="todoInput" type="text" placeholder="예: 자바스크립트 공부하기" />
+        <button id="addButton">추가</button>
+      </div>
+
+      <p class="hint">Enter 키를 눌러서도 추가할 수 있어요.</p>
+
+      <ul id="todoList"></ul>
+    </section>
+  </main>
+
+  <script>
+    // 할 일을 저장하는 배열입니다.
+    // 새로고침하면 이 값은 초기화됩니다.
+    const todos = [];
+
+    const todoInput = document.getElementById('todoInput');
+    const addButton = document.getElementById('addButton');
+    const todoList = document.getElementById('todoList');
+
+    function addTodo() {
+      const text = todoInput.value.trim();
+
+      // 빈 값은 추가하지 않습니다.
+      if (text === '') {
+        alert('할 일을 입력해 주세요.');
+        todoInput.focus();
+        return;
+      }
+
+      todos.push({
+        text: text,
+        done: false
+      });
+
+      todoInput.value = '';
+      todoInput.focus();
+      renderTodos();
+    }
+
+    function toggleTodo(index) {
+      todos[index].done = !todos[index].done;
+      renderTodos();
+    }
+
+    function deleteTodo(index) {
+      todos.splice(index, 1);
+      renderTodos();
+    }
+
+    function renderTodos() {
+      todoList.innerHTML = '';
+
+      if (todos.length === 0) {
+        todoList.innerHTML = '<li class="empty">아직 등록된 할 일이 없어요. 위에서 하나 추가해보세요!</li>';
+        return;
+      }
+
+      todos.forEach((todo, index) => {
+        const li = document.createElement('li');
+
+        const textSpan = document.createElement('span');
+        textSpan.className = 'todo-text';
+        textSpan.textContent = todo.text;
+
+        // 완료된 항목은 줄을 긋고 색을 옅게 표시합니다.
+        if (todo.done) {
+          textSpan.classList.add('done');
+        }
+
+        const buttons = document.createElement('div');
+        buttons.className = 'buttons';
+
+        const checkButton = document.createElement('button');
+        checkButton.className = 'check-button';
+        checkButton.textContent = todo.done ? '완료 취소' : '완료';
+        checkButton.addEventListener('click', () => toggleTodo(index));
+
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'delete-button';
+        deleteButton.textContent = '삭제';
+        deleteButton.addEventListener('click', () => deleteTodo(index));
+
+        buttons.appendChild(checkButton);
+        buttons.appendChild(deleteButton);
+
+        li.appendChild(textSpan);
+        li.appendChild(buttons);
+
+        todoList.appendChild(li);
+      });
+    }
+
+    addButton.addEventListener('click', addTodo);
+
+    todoInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        addTodo();
+      }
+    });
+
+    // 처음 화면을 그립니다.
+    renderTodos();
+  </script>
+</body>
+</html>
