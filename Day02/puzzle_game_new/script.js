@@ -36,6 +36,25 @@ const result_title_element = document.getElementById("resultTitle");
 const result_text_element = document.getElementById("resultText");
 const result_button_element = document.getElementById("resultButton");
 
+function has_required_elements() {
+  return Boolean(
+    board_element &&
+    stage_name_element &&
+    attempt_count_element &&
+    score_count_element &&
+    timer_count_element &&
+    message_element &&
+    restart_button &&
+    start_screen_element &&
+    start_button_element &&
+    result_screen_element &&
+    result_kicker_element &&
+    result_title_element &&
+    result_text_element &&
+    result_button_element,
+  );
+}
+
 let current_stage_index = 0;
 let current_stage = stage_order[current_stage_index];
 let current_pairs = 0;
@@ -184,17 +203,25 @@ function start_timer() {
 }
 
 function apply_stage(stage_index, keep_score = true) {
+  const next_stage = stage_order[stage_index];
+
+  if (!next_stage) {
+    console.error("유효하지 않은 단계 인덱스입니다:", stage_index);
+    return;
+  }
+
   stop_timer();
   stop_mismatch_timer();
   stop_stage_transition();
 
   current_stage_index = stage_index;
-  current_stage = stage_order[current_stage_index];
+  current_stage = next_stage;
   remaining_time = current_stage.time_limit;
   game_started = true;
   game_finished = false;
   board_locked = false;
   reset_selection();
+  matched_pairs = 0;
 
   if (!keep_score) {
     attempt_count = 0;
@@ -223,8 +250,11 @@ function return_to_start_screen() {
 
   game_started = false;
   game_finished = false;
+  board_locked = false;
   current_stage_index = 0;
   current_stage = stage_order[0];
+  current_pairs = 0;
+  matched_pairs = 0;
   remaining_time = current_stage.time_limit;
   attempt_count = 0;
   score_count = 0;
@@ -319,7 +349,7 @@ function handle_matched_pair() {
   update_score_display();
   reset_selection();
 
-  if (document.querySelectorAll(".card:not(.matched)").length === 0) {
+  if (matched_pairs === current_pairs) {
     handle_stage_clear();
   } else {
     set_message("잘 찾았어요! 같은 그림입니다.", "success");
@@ -368,12 +398,21 @@ function handle_card_click(card_element) {
 }
 
 function bind_events() {
+  if (!has_required_elements()) {
+    return;
+  }
+
   start_button_element.addEventListener("click", start_game);
   result_button_element.addEventListener("click", start_game);
   restart_button.addEventListener("click", return_to_start_screen);
 }
 
 function init_game() {
+  if (!has_required_elements()) {
+    console.error("퍼즐 게임을 시작할 수 없습니다. 필수 DOM 요소가 없습니다.");
+    return;
+  }
+
   bind_events();
   update_stage_display();
   update_attempt_display();
