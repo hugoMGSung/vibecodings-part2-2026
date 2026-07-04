@@ -100,7 +100,7 @@
 
 - 내 컴퓨터에 복사
     - Code 버튼 클릭
-    - Clone > HTTPS 주소 복사
+    - Clone > HTTPS 주소 복사    
 
 ![alt text](image-43.png)
 
